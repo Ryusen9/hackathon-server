@@ -27,6 +27,62 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const userCollection = client.db("DIU_CPC").collection("users");
+    const eventRegistration = client
+      .db("DIU_CPC")
+      .collection("event_registration");
+
+    // user routes
+    app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email: email });
+      res.send(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // events
+    app.get("/events", async (req, res) => {
+      const result = await eventRegistration.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/events", async (req, res) => {
+      const user = req.body;
+      const result = await eventRegistration.insertOne(user);
+      res.send(result);
+    });
+
+    // event registration
+    app.get("/eventsRegistration/:email", async (req, res) => {
+      const email = req.params.email;
+      const result = await eventRegistration.findOne({ email: email });
+      res.send(result);
+    });
+
+    app.post("/eventsRegistration/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await eventRegistration.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.send(result);
+    });
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
